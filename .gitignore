@@ -1,0 +1,14 @@
+# === Geral ===
+.DS_Store
+
+# === Backend (Python) ===
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.env
+/.venv/
+
+# Docker
+docker-compose.yml

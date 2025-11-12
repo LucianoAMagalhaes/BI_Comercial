@@ -3,10 +3,10 @@
   "name": "3264b8deae597389315a",
   "position": {
     "x": 0,
-    "y": 82.88621646623497,
+    "y": 83.01040832666132,
     "z": 0,
-    "height": 98.279370952821466,
-    "width": 1121.3320999074931
+    "height": 98.382706164931946,
+    "width": 1218.5108086469174
   },
   "visual": {
     "visualType": "multiRowCard",
@@ -111,6 +111,20 @@
               },
               "queryRef": "Medidas.Valor Bruto YoY %",
               "nativeQueryRef": "Valor Bruto YoY %"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Pedidos em Comum (Afinidade)"
+                }
+              },
+              "queryRef": "Medidas.Pedidos em Comum (Afinidade)",
+              "nativeQueryRef": "Pedidos em Comum (Afinidade)"
             }
           ]
         }

@@ -24,6 +24,7 @@ ref table 'public v_dim_geolocation'
 ref table 'public v_dim_customers'
 ref table dCalendar
 ref table Medidas
+ref table dim_products_columns
 
 ref cultureInfo en-US
 

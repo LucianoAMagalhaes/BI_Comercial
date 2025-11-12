@@ -1,0 +1,21 @@
+table dim_products_columns
+	lineageTag: 7962720e-9723-41c8-a61d-085a21ee4ed9
+
+	column product_category
+		lineageTag: 103dda0a-4d67-459d-b8cb-c37c53f0a155
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: public v_dim_products[product_category]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dim_products_columns = calculated
+		mode: import
+		source =
+				SUMMARIZE(
+				    'public v_dim_products',
+				    'public v_dim_products'[product_category]
+				)
+
+	annotation PBI_Id = 119e3c505c084a23a266ac4c8aceba59
+

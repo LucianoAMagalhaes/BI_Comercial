@@ -56,6 +56,52 @@ table Medidas
 		formatString: 0.00%;-0.00%;0.00%
 		lineageTag: 453fcb21-021d-4cd7-bb4c-e525004ab894
 
+	measure 'Pedidos em Comum (Afinidade)' =
+			
+			// Pega os valores selecionados na linha e coluna da matriz
+			VAR produto_linha = SELECTEDVALUE('public v_dim_products'[product_category])
+			VAR produto_coluna = SELECTEDVALUE(dim_products_columns[product_category])
+			
+			// Calcula a lista de pedidos para o produto da LINHA
+			VAR pedidos_produto_linha = CALCULATETABLE(
+			    VALUES('public v_fact_order_itens'[order_id]),
+			    'public v_dim_products'
+			)
+			
+			// Calcula a lista de pedidos para o produto da COLUNA
+			VAR pedidos_produto_coluna = CALCULATETABLE(
+			    VALUES('public v_fact_order_itens'[order_id]),
+			    TREATAS(
+			        VALUES(dim_products_columns[product_category]),
+			        'public v_dim_products'[product_category]
+			    )
+			)
+			
+			// Encontra a interseção (pedidos em comum)
+			VAR pedidos_comuns = INTERSECT(pedidos_produto_linha, pedidos_produto_coluna)
+			
+			// Conta o resultado
+			VAR contagem_pedidos_comuns = COUNTROWS(pedidos_comuns)
+			
+			// Lógica de retorno
+			RETURN
+			IF(
+			    // Teste 1: Limpar a diagonal (linha = coluna)
+			    produto_linha = produto_coluna,
+			    BLANK(),
+			
+			    // Teste 2: Limpar nulos (se não houver dados para um dos lados)
+			    IF(
+			        ISBLANK(pedidos_produto_linha) || ISBLANK(pedidos_produto_coluna),
+			        BLANK(),
+			
+			        // Resultado Final: Retorna a contagem
+			        contagem_pedidos_comuns
+			    )
+			)
+		formatString: 0
+		lineageTag: 32f034e3-e487-4263-8c11-d0e62bd93aac
+
 	partition Medidas = m
 		mode: import
 		source =

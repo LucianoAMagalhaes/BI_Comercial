@@ -1,0 +1,59 @@
+table 'public v_dim_customers'
+	lineageTag: 2398dae1-5c61-4be9-983f-38db1f888867
+
+	column customer_id
+		dataType: string
+		lineageTag: 58751d36-5e82-45a9-a284-4fbb73e13751
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_unique_id
+		dataType: string
+		lineageTag: c31b7852-5bd7-43b6-a081-3bed09703b42
+		summarizeBy: none
+		sourceColumn: customer_unique_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_zip_code_prefix
+		dataType: string
+		isHidden
+		lineageTag: 63e581ab-c491-497e-b49a-1cb1c8fced4c
+		summarizeBy: none
+		sourceColumn: customer_zip_code_prefix
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_city
+		dataType: string
+		lineageTag: 497bb3f8-e14e-4805-869e-b05f91edf988
+		summarizeBy: none
+		sourceColumn: customer_city
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_state
+		dataType: string
+		lineageTag: 31ed41b6-3041-40b9-98c4-af1ebdaffc68
+		summarizeBy: none
+		sourceColumn: customer_state
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'public v_dim_customers' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database("172.23.94.200", "bi_comercial_db"),
+				    public_v_dim_customers = Source{[Schema="public",Item="v_dim_customers"]}[Data]
+				in
+				    public_v_dim_customers
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

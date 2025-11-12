@@ -1,0 +1,209 @@
+table 'public v_fact_order_itens'
+	lineageTag: 4d022d48-c582-406c-88e4-49d7be8228f7
+
+	column order_id
+		dataType: string
+		lineageTag: a96a7d8a-e67d-4dea-85d0-ad334f40a5b0
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column customer_id
+		dataType: string
+		isHidden
+		lineageTag: 9a8fb8b8-fb81-4e34-a0c2-68cf8519c215
+		summarizeBy: none
+		sourceColumn: customer_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_status
+		dataType: string
+		lineageTag: d4bd83a3-2524-4a28-8f07-16073ec36de8
+		summarizeBy: none
+		sourceColumn: order_status
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_purchase_timestamp
+		dataType: dateTime
+		formatString: Short Date
+		lineageTag: 318e5c51-b453-455b-81cc-116cf0ef1074
+		summarizeBy: none
+		sourceColumn: order_purchase_timestamp
+
+		variation Variation
+			isDefault
+			relationship: 7adf2eeb-6f1a-47a2-b345-6c08e7032428
+			defaultHierarchy: LocalDateTable_ae72fca2-69f6-400c-a566-d26990065913.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column order_approved_at
+		dataType: dateTime
+		isHidden
+		formatString: General Date
+		lineageTag: cfb46d38-1144-4d74-8f1a-6b16f6d6d7dd
+		summarizeBy: none
+		sourceColumn: order_approved_at
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_delivered_carrier_date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: b26812e1-6546-411e-84dc-9c7e4a98467c
+		summarizeBy: none
+		sourceColumn: order_delivered_carrier_date
+
+		variation Variation
+			isDefault
+			relationship: 7eaf6ae1-73ed-4fbe-8c26-3d5366c0c123
+			defaultHierarchy: LocalDateTable_48428d1e-2216-422e-ae5e-61ae7bdde05f.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_delivered_customer_date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: ccec97a3-07b8-4942-86f7-2dfc7764de34
+		summarizeBy: none
+		sourceColumn: order_delivered_customer_date
+
+		variation Variation
+			isDefault
+			relationship: bb97f9fb-4ba0-4760-b2f4-7a18e9ddb109
+			defaultHierarchy: LocalDateTable_d6a2c95b-c9f2-4d99-81ab-2a009a1f80e4.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_estimated_delivery_date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: 4d5cc757-cac7-4f76-bc41-a8ab70b790ee
+		summarizeBy: none
+		sourceColumn: order_estimated_delivery_date
+
+		variation Variation
+			isDefault
+			relationship: f83d91d8-1240-45b0-9e80-c837a37b059c
+			defaultHierarchy: LocalDateTable_20621872-ab8f-4f1f-9e6b-cda299ebbf17.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_item_id
+		dataType: string
+		lineageTag: 11a6b5f0-7db7-4ac7-9472-d7dc720b289b
+		summarizeBy: none
+		sourceColumn: order_item_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: string
+		isHidden
+		lineageTag: c1060286-f6e0-498e-b092-a912ef26b622
+		summarizeBy: none
+		sourceColumn: product_id
+
+		changedProperty = IsHidden
+
+		annotation SummarizationSetBy = Automatic
+
+	column seller_id
+		dataType: string
+		lineageTag: 2afb2ad8-b62d-499b-9d20-2ef3b0ac7d7a
+		summarizeBy: none
+		sourceColumn: seller_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column shipping_limit_date
+		dataType: dateTime
+		formatString: General Date
+		lineageTag: dc9e5574-6e1e-4614-aa04-1876705eec91
+		summarizeBy: none
+		sourceColumn: shipping_limit_date
+
+		variation Variation
+			isDefault
+			relationship: 9feaff7b-67ee-4f9a-a26b-bb73ac34ee24
+			defaultHierarchy: LocalDateTable_7298f136-2563-44d8-8288-e960d3f8d593.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+	column price
+		dataType: double
+		lineageTag: d4d98b47-a53e-475d-ba4d-e153efd3f7de
+		summarizeBy: sum
+		sourceColumn: price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column freight_value
+		dataType: double
+		lineageTag: 17886db5-0a0c-4502-ad73-4a20c23cae1f
+		summarizeBy: sum
+		sourceColumn: freight_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 4367e642-63b4-4917-abb6-8e4d284629de
+		summarizeBy: sum
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column seller_zip_code_prefix
+		dataType: string
+		lineageTag: ed44a203-e0ec-4137-a317-0d641f73e4ac
+		summarizeBy: none
+		sourceColumn: seller_zip_code_prefix
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_value
+		dataType: double
+		lineageTag: 9219d095-27a2-42bd-8154-59bc76f3a201
+		summarizeBy: sum
+		sourceColumn: payment_value
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column payment_method
+		dataType: string
+		lineageTag: 108be693-ed7c-48df-b83a-a60fe64d4caa
+		summarizeBy: none
+		sourceColumn: payment_method
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'public v_fact_order_itens' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database("172.23.94.200", "bi_comercial_db"),
+				    public_v_fact_order_itens = Source{[Schema="public",Item="v_fact_order_itens"]}[Data]
+				in
+				    public_v_fact_order_itens
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

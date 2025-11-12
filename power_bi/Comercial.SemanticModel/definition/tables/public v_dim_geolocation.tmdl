@@ -1,0 +1,60 @@
+table 'public v_dim_geolocation'
+	lineageTag: 1d169dc2-09d4-4c4f-9a4b-def3ba4d51e1
+
+	column geolocation_zip_code_prefix
+		dataType: string
+		lineageTag: a651d354-ca51-4f0a-b072-ab3574602a7e
+		summarizeBy: none
+		sourceColumn: geolocation_zip_code_prefix
+
+		annotation SummarizationSetBy = Automatic
+
+	column lat
+		dataType: double
+		lineageTag: 8faedb2b-445b-4952-8a09-f3d4d9293e45
+		summarizeBy: none
+		sourceColumn: lat
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column long
+		dataType: double
+		lineageTag: 61ed1c94-f6ab-4414-8f3e-124cee802217
+		summarizeBy: none
+		sourceColumn: long
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column city
+		dataType: string
+		lineageTag: 3dbff4bf-9cd7-4b5c-8dab-1ffda0a2097d
+		summarizeBy: none
+		sourceColumn: city
+
+		annotation SummarizationSetBy = Automatic
+
+	column state
+		dataType: string
+		lineageTag: 796dbd33-a3bd-40bc-97c1-9559b515c786
+		summarizeBy: none
+		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'public v_dim_geolocation' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database("172.23.94.200", "bi_comercial_db"),
+				    public_v_dim_geolocation = Source{[Schema="public",Item="v_dim_geolocation"]}[Data]
+				in
+				    public_v_dim_geolocation
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

@@ -4,10 +4,89 @@
     {
       "ordinal": 0,
       "scrollPosition": {
-        "x": 0,
+        "x": 143.38305001469371,
         "y": 0
       },
-      "nodes": [],
+      "nodes": [
+        {
+          "location": {
+            "x": 430.38305001469394,
+            "y": 10
+          },
+          "nodeIndex": "public v_dim_customers",
+          "nodeLineageTag": "2398dae1-5c61-4be9-983f-38db1f888867",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 773.38305001469382,
+            "y": 0
+          },
+          "nodeIndex": "public v_dim_geolocation",
+          "nodeLineageTag": "1d169dc2-09d4-4c4f-9a4b-def3ba4d51e1",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 33,
+            "y": 36.140412819753806
+          },
+          "nodeIndex": "public v_dim_products",
+          "nodeLineageTag": "7a9955ca-92d5-4daa-91ad-8d2b6f2dd1df",
+          "size": {
+            "height": 217,
+            "width": 276
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 301.20156119318534,
+            "y": 367
+          },
+          "nodeIndex": "public v_fact_order_itens",
+          "nodeLineageTag": "4d022d48-c582-406c-88e4-49d7be8228f7",
+          "size": {
+            "height": 300,
+            "width": 304
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 749.38305001469371,
+            "y": 353
+          },
+          "nodeIndex": "dCalendar",
+          "nodeLineageTag": "03c6aa18-9fcc-407d-9b97-8eec09f8d743",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1024.3830500146937,
+            "y": 281.5
+          },
+          "nodeIndex": "Medidas",
+          "nodeLineageTag": "3cebeb45-f486-4d97-8f05-6acaadc519cc",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
       "name": "All tables",
       "zoomValue": 100,
       "pinKeyFieldsToTop": false,

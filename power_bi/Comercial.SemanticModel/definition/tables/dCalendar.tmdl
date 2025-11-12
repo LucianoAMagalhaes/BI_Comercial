@@ -1,0 +1,99 @@
+table dCalendar
+	lineageTag: 03c6aa18-9fcc-407d-9b97-8eec09f8d743
+	dataCategory: Time
+
+	column Data
+		dataType: dateTime
+		isKey
+		formatString: Long Date
+		lineageTag: 10cb7707-2952-4679-9788-798c79771ce7
+		summarizeBy: none
+		sourceColumn: Data
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Ano
+		dataType: int64
+		formatString: 0
+		lineageTag: 4cac6803-e5a5-435a-9adc-7f6e72b06b25
+		summarizeBy: sum
+		sourceColumn: Ano
+
+		annotation SummarizationSetBy = Automatic
+
+	column Mês
+		dataType: int64
+		formatString: 0
+		lineageTag: 684cd355-c7e2-4523-8937-16531e5d4d4f
+		summarizeBy: sum
+		sourceColumn: Mês
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nome do Mês'
+		dataType: string
+		lineageTag: 3ac7356a-0967-47ae-9cd7-9780d5286bfc
+		summarizeBy: none
+		sourceColumn: Nome do Mês
+
+		annotation SummarizationSetBy = Automatic
+
+	column Day
+		dataType: int64
+		formatString: 0
+		lineageTag: f343b8f0-66ac-4589-9652-11611484eb53
+		summarizeBy: sum
+		sourceColumn: Day
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Mês Abreviado'
+		dataType: string
+		lineageTag: a83e2300-1503-4eb9-a215-aab3f6278529
+		summarizeBy: none
+		sourceColumn: Mês Abreviado
+
+		annotation SummarizationSetBy = Automatic
+
+	partition dCalendar = m
+		mode: import
+		source =
+				let
+				    // 1. Identificar as datas mínima e máxima da tabela de fatos
+				    FonteDados = #"public v_fact_order_itens", // Substitua pelo nome da sua tabela de fatos
+				    DataMinima = List.Min(FonteDados[order_purchase_timestamp]), // Substitua pelo nome da sua coluna de data
+				    DataMaxima = List.Max(FonteDados[order_purchase_timestamp]), // Substitua pelo nome da sua coluna de data
+				
+				    // 2. Ajustar para o início do primeiro ano e fim do último ano (opcional, mas recomendado)
+				    DataInicio = Date.StartOfYear(DataMinima),
+				    DataFim = Date.EndOfYear(DataMaxima),
+				
+				    // 3. Calcular o número de dias entre as datas
+				    QtdeDias = Duration.Days(DataFim - DataInicio) + 1,
+				
+				    // 4. Gerar a lista de datas
+				    ListaDatas = List.Dates(DataInicio, QtdeDias, #duration(1, 0, 0, 0)),
+				
+				    // 5. Converter a lista em tabela
+				    Tabela = Table.FromList(ListaDatas, Splitter.SplitByNothing(), null, null, ExtraValues.Error),
+				
+				    // 6. Renomear a coluna e alterar o tipo para Data
+				    #"Colunas Renomeadas" = Table.RenameColumns(Tabela,{{"Column1", "Data"}}),
+				    #"Tipo Alterado" = Table.TransformColumnTypes(#"Colunas Renomeadas",{{"Data", type date}}),
+				
+				    // 7. Adicionar colunas adicionais úteis (Ano, Mês, Nome do Mês, etc.)
+				    #"Inserir Ano" = Table.AddColumn(#"Tipo Alterado", "Ano", each Date.Year([Data]), Int64.Type),
+				    #"Inserir Mês" = Table.AddColumn(#"Inserir Ano", "Mês", each Date.Month([Data]), Int64.Type),
+				    #"Inserir Nome do Mês" = Table.AddColumn(#"Inserir Mês", "Nome do Mês", each Date.MonthName([Data]), type text),
+				    #"Inserted Day" = Table.AddColumn(#"Inserir Nome do Mês", "Day", each Date.Day([Data]), Int64.Type),
+				    #"Capitalized Each Word" = Table.TransformColumns(#"Inserted Day",{{"Nome do Mês", Text.Proper, type text}}),
+				    #"Inserted First Characters" = Table.AddColumn(#"Capitalized Each Word", "Mês Abreviado", each Text.Start([Nome do Mês], 3), type text)
+				in
+				    #"Inserted First Characters"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

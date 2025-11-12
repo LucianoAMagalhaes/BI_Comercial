@@ -1,0 +1,70 @@
+table Medidas
+	lineageTag: 3cebeb45-f486-4d97-8f05-6acaadc519cc
+
+	measure 'Quantidade Total' = SUM('public v_fact_order_itens'[quantity])
+		formatString: #,0
+		lineageTag: e8f0166b-2198-42bb-bdde-647c3ab2c15b
+
+	measure 'Valor Bruto Total' =
+			SUMX(
+			    'public v_fact_order_itens',
+			    'public v_fact_order_itens'[quantity] * 'public v_fact_order_itens'[price]
+			)
+		formatString: #,0.00
+		lineageTag: f2d5f0f0-041b-4fd4-87d8-0658a42e9d8f
+
+	measure 'Total de Pedidos' = DISTINCTCOUNT('public v_fact_order_itens'[order_id])
+		formatString: #,0
+		lineageTag: 7059262d-f217-4fbd-b033-73eae006838e
+
+	measure 'Valor Bruto YTD' =
+			TOTALYTD(
+			    [Valor Bruto Total],
+			    dCalendar[Data]
+			)
+		lineageTag: 36c310de-bd2d-42aa-86a5-cf202a07b42a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Qunatidade YTD' =
+			TOTALYTD(
+			    [Quantidade Total],
+			    dCalendar[Data]
+			)
+		formatString: 0
+		lineageTag: 86935fe0-ea36-49b0-a5f1-959438fcd724
+
+	measure 'Valor Bruto PY' =
+			CALCULATE(
+			    [Valor Bruto Total],
+			    SAMEPERIODLASTYEAR(dCalendar[Data])
+			)
+		lineageTag: 8e992bdf-b0ee-4913-93b7-000ca1294a80
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Valor Bruto YoY %' =
+			
+			VAR valor_atual = [Valor Bruto Total]
+			VAR valor_anterior = [Valor Bruto PY]
+			VAR crescimento = valor_atual - valor_anterior
+			RETURN
+			DIVIDE(
+			    crescimento,
+			    valor_anterior
+			)
+		formatString: 0.00%;-0.00%;0.00%
+		lineageTag: 453fcb21-021d-4cd7-bb4c-e525004ab894
+
+	partition Medidas = m
+		mode: import
+		source =
+				let
+				    Source = Table.FromRows(Json.Document(Binary.Decompress(Binary.FromText("i44FAA==", BinaryEncoding.Base64), Compression.Deflate)), let _t = ((type nullable text) meta [Serialized.Text = true]) in type table [Column1 = _t]),
+				    #"Changed Type" = Table.TransformColumnTypes(Source,{{"Column1", type text}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Column1"})
+				in
+				    #"Removed Columns"
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,32 @@
+table 'public v_dim_products'
+	lineageTag: 7a9955ca-92d5-4daa-91ad-8d2b6f2dd1df
+
+	column product_id
+		dataType: string
+		lineageTag: 6bbd534a-30eb-447d-a6e8-8a34e51e0cfa
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_category
+		dataType: string
+		lineageTag: a2665af9-b364-4aa4-8cc2-48a1a8a876fb
+		summarizeBy: none
+		sourceColumn: product_category
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'public v_dim_products' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database("172.23.94.200", "bi_comercial_db"),
+				    public_v_dim_products = Source{[Schema="public",Item="v_dim_products"]}[Data]
+				in
+				    public_v_dim_products
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

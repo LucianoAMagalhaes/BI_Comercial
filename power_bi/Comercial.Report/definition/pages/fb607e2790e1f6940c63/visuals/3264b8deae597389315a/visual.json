@@ -1,0 +1,241 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.2.0/schema.json",
+  "name": "3264b8deae597389315a",
+  "position": {
+    "x": 0,
+    "y": 82.88621646623497,
+    "z": 0,
+    "height": 98.279370952821466,
+    "width": 1121.3320999074931
+  },
+  "visual": {
+    "visualType": "multiRowCard",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Quantidade Total"
+                }
+              },
+              "queryRef": "Medidas.Quantidade Total",
+              "nativeQueryRef": "Quantidade Total"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Valor Bruto Total"
+                }
+              },
+              "queryRef": "Medidas.Valor Bruto Total",
+              "nativeQueryRef": "Valor Bruto Total"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Total de Pedidos"
+                }
+              },
+              "queryRef": "Medidas.Total de Pedidos",
+              "nativeQueryRef": "Total de Pedidos"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Valor Bruto YTD"
+                }
+              },
+              "queryRef": "Medidas.Valor Bruto YTD",
+              "nativeQueryRef": "Valor Bruto YTD"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Qunatidade YTD"
+                }
+              },
+              "queryRef": "Medidas.Qunatidade YTD",
+              "nativeQueryRef": "Qunatidade YTD"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Valor Bruto PY"
+                }
+              },
+              "queryRef": "Medidas.Valor Bruto PY",
+              "nativeQueryRef": "Valor Bruto PY"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Valor Bruto YoY %"
+                }
+              },
+              "queryRef": "Medidas.Valor Bruto YoY %",
+              "nativeQueryRef": "Valor Bruto YoY %"
+            }
+          ]
+        }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Measure": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Medidas"
+                  }
+                },
+                "Property": "Quantidade Total"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
+      }
+    },
+    "drillFilterOtherVisuals": true
+  },
+  "filterConfig": {
+    "filters": [
+      {
+        "name": "378b83f80694c871c68a",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Medidas"
+              }
+            },
+            "Property": "Quantidade Total"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "a470f88f5b38fa537554",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Medidas"
+              }
+            },
+            "Property": "Total de Pedidos"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "968cb931c43a37c74746",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Medidas"
+              }
+            },
+            "Property": "Valor Bruto Total"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "9d3854cecbf693d8377c",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Medidas"
+              }
+            },
+            "Property": "Valor Bruto YTD"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "2fe5a072b3047be05d1a",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Medidas"
+              }
+            },
+            "Property": "Qunatidade YTD"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "cca91761c36fda9090cb",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Medidas"
+              }
+            },
+            "Property": "Valor Bruto PY"
+          }
+        },
+        "type": "Advanced"
+      },
+      {
+        "name": "449341d0727848ff0e31",
+        "field": {
+          "Measure": {
+            "Expression": {
+              "SourceRef": {
+                "Entity": "Medidas"
+              }
+            },
+            "Property": "Valor Bruto YoY %"
+          }
+        },
+        "type": "Advanced"
+      }
+    ]
+  }
+}

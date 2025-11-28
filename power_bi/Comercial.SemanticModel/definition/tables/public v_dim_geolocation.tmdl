@@ -40,8 +40,17 @@ table 'public v_dim_geolocation'
 	column state
 		dataType: string
 		lineageTag: 796dbd33-a3bd-40bc-97c1-9559b515c786
+		dataCategory: StateOrProvince
 		summarizeBy: none
 		sourceColumn: state
+
+		annotation SummarizationSetBy = Automatic
+
+	column uf
+		dataType: string
+		lineageTag: 34daae13-4398-4fe9-a886-cf5c213f2f75
+		summarizeBy: none
+		sourceColumn: uf
 
 		annotation SummarizationSetBy = Automatic
 

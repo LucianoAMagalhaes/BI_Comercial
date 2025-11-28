@@ -8,13 +8,12 @@ model Model
 
 annotation __PBI_TimeIntelligenceEnabled = 1
 
-annotation PBI_ProTooling = ["DevMode"]
+annotation PBI_ProTooling = ["DevMode","DaxQueryView_Desktop"]
 
-annotation PBI_QueryOrder = ["public v_fact_order_itens","public v_dim_products","public v_dim_geolocation","public v_dim_customers","dCalendar","Medidas"]
+annotation PBI_QueryOrder = ["public v_fact_order_itens","public v_dim_products","public v_dim_geolocation","public v_dim_customers","public v_dim_payments","dCalendar","Medidas"]
 
 ref table 'public v_fact_order_itens'
 ref table DateTableTemplate_aae27c0e-04fb-4509-93f9-216bd27dea39
-ref table LocalDateTable_ae72fca2-69f6-400c-a566-d26990065913
 ref table LocalDateTable_48428d1e-2216-422e-ae5e-61ae7bdde05f
 ref table LocalDateTable_d6a2c95b-c9f2-4d99-81ab-2a009a1f80e4
 ref table LocalDateTable_20621872-ab8f-4f1f-9e6b-cda299ebbf17
@@ -25,6 +24,11 @@ ref table 'public v_dim_customers'
 ref table dCalendar
 ref table Medidas
 ref table dim_products_columns
+ref table LocalDateTable_3cf8ded0-84d9-47fb-a477-656ac5c64bd6
+ref table d_rfm
+ref table 'Janela de Média'
+ref table 'Crescimento Esperado %'
+ref table 'public v_dim_payments'
 
 ref cultureInfo en-US
 

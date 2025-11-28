@@ -1,0 +1,26 @@
+table 'Janela de Média'
+	lineageTag: 9f56edb8-4088-4ed0-a164-3d2b31f8bbef
+
+	measure 'Janela de Média Value' = SELECTEDVALUE('Janela de Média'[Janela de Média], 30)
+		formatString: 0
+		lineageTag: 430a58b0-d6bc-40c0-afe4-d152fe456b97
+
+	column 'Janela de Média'
+		formatString: 0
+		lineageTag: 1f398f6f-f1c7-47d0-9965-87680d463e36
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+	partition 'Janela de Média' = calculated
+		mode: import
+		source = GENERATESERIES(7, 90, 7)
+
+	annotation PBI_Id = ad3c94db7b3a4709b68a71d66cf23e3e
+

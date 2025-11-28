@@ -18,7 +18,7 @@ table dCalendar
 		dataType: int64
 		formatString: 0
 		lineageTag: 4cac6803-e5a5-435a-9adc-7f6e72b06b25
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Ano
 
 		annotation SummarizationSetBy = Automatic
@@ -27,7 +27,7 @@ table dCalendar
 		dataType: int64
 		formatString: 0
 		lineageTag: 684cd355-c7e2-4523-8937-16531e5d4d4f
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Mês
 
 		annotation SummarizationSetBy = Automatic
@@ -37,6 +37,9 @@ table dCalendar
 		lineageTag: 3ac7356a-0967-47ae-9cd7-9780d5286bfc
 		summarizeBy: none
 		sourceColumn: Nome do Mês
+		sortByColumn: Mês
+
+		changedProperty = SortByColumn
 
 		annotation SummarizationSetBy = Automatic
 
@@ -44,7 +47,7 @@ table dCalendar
 		dataType: int64
 		formatString: 0
 		lineageTag: f343b8f0-66ac-4589-9652-11611484eb53
-		summarizeBy: sum
+		summarizeBy: none
 		sourceColumn: Day
 
 		annotation SummarizationSetBy = Automatic
@@ -54,6 +57,29 @@ table dCalendar
 		lineageTag: a83e2300-1503-4eb9-a215-aab3f6278529
 		summarizeBy: none
 		sourceColumn: Mês Abreviado
+		sortByColumn: Mês
+
+		changedProperty = SortByColumn
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Day of Week'
+		dataType: int64
+		formatString: 0
+		lineageTag: d0a15492-a2ea-4a31-8db0-b48920a7f3b3
+		summarizeBy: none
+		sourceColumn: Day of Week
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Nome do dia'
+		dataType: string
+		lineageTag: 0ed37c34-89fd-49f9-9649-cda25904a27f
+		summarizeBy: none
+		sourceColumn: Nome do dia
+		sortByColumn: 'Day of Week'
+
+		changedProperty = SortByColumn
 
 		annotation SummarizationSetBy = Automatic
 
@@ -89,9 +115,11 @@ table dCalendar
 				    #"Inserir Nome do Mês" = Table.AddColumn(#"Inserir Mês", "Nome do Mês", each Date.MonthName([Data]), type text),
 				    #"Inserted Day" = Table.AddColumn(#"Inserir Nome do Mês", "Day", each Date.Day([Data]), Int64.Type),
 				    #"Capitalized Each Word" = Table.TransformColumns(#"Inserted Day",{{"Nome do Mês", Text.Proper, type text}}),
-				    #"Inserted First Characters" = Table.AddColumn(#"Capitalized Each Word", "Mês Abreviado", each Text.Start([Nome do Mês], 3), type text)
+				    #"Inserted First Characters" = Table.AddColumn(#"Capitalized Each Word", "Mês Abreviado", each Text.Start([Nome do Mês], 3), type text),
+				    #"Inserted Day of Week" = Table.AddColumn(#"Inserted First Characters", "Day of Week", each Date.DayOfWeek([Data], Day.Monday), Int64.Type),
+				    #"Added Conditional Column" = Table.AddColumn(#"Inserted Day of Week", "Nome do dia", each if [Day of Week] = 0 then "Segunda" else if [Day of Week] = 1 then "Terça" else if [Day of Week] = 2 then "Quarta" else if [Day of Week] = 3 then "Quinta" else if [Day of Week] = 4 then "Sexta" else if [Day of Week] = 5 then "Sábado" else if [Day of Week] = 6 then "Domingo" else null, type text)
 				in
-				    #"Inserted First Characters"
+				    #"Added Conditional Column"
 
 	annotation PBI_NavigationStepName = Navigation
 

@@ -35,11 +35,6 @@ table 'public v_fact_order_itens'
 		summarizeBy: none
 		sourceColumn: order_purchase_timestamp
 
-		variation Variation
-			isDefault
-			relationship: 7adf2eeb-6f1a-47a2-b345-6c08e7032428
-			defaultHierarchy: LocalDateTable_ae72fca2-69f6-400c-a566-d26990065913.'Date Hierarchy'
-
 		annotation SummarizationSetBy = Automatic
 
 		annotation UnderlyingDateTimeDataType = Date
@@ -51,6 +46,11 @@ table 'public v_fact_order_itens'
 		lineageTag: cfb46d38-1144-4d74-8f1a-6b16f6d6d7dd
 		summarizeBy: none
 		sourceColumn: order_approved_at
+
+		variation Variation
+			isDefault
+			relationship: 5020fae4-4547-4fdd-8eeb-5d980a9e2780
+			defaultHierarchy: LocalDateTable_3cf8ded0-84d9-47fb-a477-656ac5c64bd6.'Date Hierarchy'
 
 		changedProperty = IsHidden
 
@@ -176,21 +176,21 @@ table 'public v_fact_order_itens'
 
 		annotation SummarizationSetBy = Automatic
 
-	column payment_value
+	column total_order
 		dataType: double
-		lineageTag: 9219d095-27a2-42bd-8154-59bc76f3a201
+		lineageTag: 410721ce-9008-4d94-9805-5436439d3ab2
 		summarizeBy: sum
-		sourceColumn: payment_value
+		sourceColumn: total_order
 
 		annotation SummarizationSetBy = Automatic
 
 		annotation PBI_FormatHint = {"isGeneralNumber":true}
 
-	column payment_method
+	column payment_type_id
 		dataType: string
-		lineageTag: 108be693-ed7c-48df-b83a-a60fe64d4caa
+		lineageTag: 0274cc60-3a60-44c1-bae5-c5618d0bef9e
 		summarizeBy: none
-		sourceColumn: payment_method
+		sourceColumn: payment_type_id
 
 		annotation SummarizationSetBy = Automatic
 

@@ -44,6 +44,14 @@ table 'public v_dim_customers'
 
 		annotation SummarizationSetBy = Automatic
 
+	column name
+		dataType: string
+		lineageTag: b123c6c1-1640-4dd1-97a9-a3703fb9e205
+		summarizeBy: none
+		sourceColumn: name
+
+		annotation SummarizationSetBy = Automatic
+
 	partition 'public v_dim_customers' = m
 		mode: import
 		source =

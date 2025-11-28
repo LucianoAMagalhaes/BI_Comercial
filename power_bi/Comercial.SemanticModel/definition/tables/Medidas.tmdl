@@ -1,106 +1,957 @@
 table Medidas
 	lineageTag: 3cebeb45-f486-4d97-8f05-6acaadc519cc
 
-	measure 'Quantidade Total' = SUM('public v_fact_order_itens'[quantity])
-		formatString: #,0
+	measure 'Quantidade Total' = ```
+			
+			/* = =========================================================================
+			Medida: Quantidade Total
+			==========================================================================
+			Descrição de Negócio:
+			    Representa o volume físico total de itens comercializados no período.
+			    É uma medida base (Base Measure) utilizada para compor KPIs mais 
+			    complexos como "Ticket Médio" e "Itens por Cesta".
+			
+			Nota Técnica (Arquitetura):
+			    A coluna [quantity] não existia na fonte original. Ela foi engenheirada 
+			    na View SQL (v_fact_order_items) com valor fixo '1' para cada linha.
+			    Isso transforma uma operação de contagem (COUNTROWS) em uma operação 
+			    de soma (SUM), que é mais performática e flexível em agregações do VertiPaq.
+			*/
+			
+			SUM('public v_fact_order_itens'[quantity])
+			```
+		formatString: 0
+		displayFolder: Vendas
 		lineageTag: e8f0166b-2198-42bb-bdde-647c3ab2c15b
 
-	measure 'Valor Bruto Total' =
+	measure 'Valor Bruto Total' = ```
+			
+			
+			/* ==========================================================================
+			Medida: Valor Bruto Total (Gross Revenue / GMV)
+			==========================================================================
+			Descrição de Negócio:
+			    Representa o Faturamento Bruto total da empresa.
+			    É a soma do valor monetário de todos os itens vendidos.
+			
+			Nota Técnica (Iteradores):
+			    Utiliza a função SUMX (Iteradora) em vez de uma multiplicação simples
+			    de colunas agregadas.
+			    
+			    Lógica: A função percorre a tabela fato 'linha a linha', multiplica 
+			    (Preço * Quantidade) naquele contexto específico e só depois soma os resultados.
+			    Isso garante a precisão matemática mesmo se a granularidade mudar no futuro 
+			    (ex: um item com quantidade > 1).
+			
+			Dependência de Arquitetura:
+			    Esta medida assume que pedidos cancelados ou com preço nulo já foram 
+			    filtrados na camada de transformação SQL (v_fact_order_items), 
+			    garantindo performance máxima no DAX.
+			*/
 			SUMX(
 			    'public v_fact_order_itens',
 			    'public v_fact_order_itens'[quantity] * 'public v_fact_order_itens'[price]
 			)
-		formatString: #,0.00
+			```
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		displayFolder: Vendas
 		lineageTag: f2d5f0f0-041b-4fd4-87d8-0658a42e9d8f
 
-	measure 'Total de Pedidos' = DISTINCTCOUNT('public v_fact_order_itens'[order_id])
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure 'Total de Pedidos' = ```
+			
+			/* ==========================================================================
+			Medida: Total de Pedidos (Order Volume)
+			==========================================================================
+			Descrição de Negócio:
+			    Contagem distinta de transações de venda (checkouts) realizadas.
+			    Esta métrica representa o tráfego de vendas, independentemente do tamanho
+			    da cesta (número de itens) de cada compra.
+			
+			Nota Técnica (Granularidade):
+			    A tabela fato (v_fact_order_items) possui granularidade no nível do ITEM.
+			    Isso significa que um pedido com 3 produtos gera 3 linhas com o mesmo OrderID.
+			    
+			    Utiliza DISTINCTCOUNT para desduplicar essas ocorrências e obter o 
+			    número real de pedidos únicos (Cabeçalhos de Pedido), garantindo a 
+			    precisão da contagem.
+			*/
+			DISTINCTCOUNT('public v_fact_order_itens'[order_id])
+			```
 		formatString: #,0
+		displayFolder: Vendas
 		lineageTag: 7059262d-f217-4fbd-b033-73eae006838e
 
-	measure 'Valor Bruto YTD' =
+	measure 'Valor Bruto YTD' = ```
+			
+			/* ==========================================================================
+			Medida: Valor Bruto YTD (Year-to-Date Revenue)
+			==========================================================================
+			Descrição de Negócio:
+			    Cálculo do Faturamento Acumulado desde o início do ano (1º de Janeiro)
+			    até a data do contexto atual.
+			    
+			    Esta métrica é essencial para monitorar o progresso anual da empresa e
+			    suavizar a volatilidade diária/mensal, permitindo uma visão clara da
+			    trajetória de crescimento.
+			
+			Nota Técnica (Time Intelligence):
+			    Utiliza a função nativa TOTALYTD, que modifica o contexto de filtro
+			    para incluir todas as datas do início do ano até a data atual.
+			    
+			    Requisito de Modelagem: Esta função exige a existência de uma Dimensão
+			    de Tempo ('dCalendar') contínua e marcada oficialmente como "Date Table"
+			    nas configurações do modelo para garantir a precisão dos cálculos de tempo.
+			*/
+			
 			TOTALYTD(
 			    [Valor Bruto Total],
 			    dCalendar[Data]
 			)
+			```
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		displayFolder: Vendas
 		lineageTag: 36c310de-bd2d-42aa-86a5-cf202a07b42a
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
 
-	measure 'Qunatidade YTD' =
+	measure 'Quantidade YTD' = ```
+			
+			/* ==========================================================================
+			Medida: Quantidade YTD (Year-to-Date Volume)
+			==========================================================================
+			Descrição de Negócio:
+			    Volume acumulado de itens vendidos desde o início do ano até a data atual.
+			    
+			    Diferente do faturamento (que mede performance financeira), esta métrica
+			    mede a "Pressão Operacional" e demanda logística acumulada ao longo do ano.
+			    Permite responder: "Estamos movimentando mais caixas este ano do que no 
+			    ano passado?"
+			
+			Nota Técnica (Reutilização de Padrões):
+			    Aplica o mesmo padrão de Time Intelligence da medida financeira, garantindo
+			    consistência arquitetural no modelo.
+			    
+			    Função: TOTALYTD avalia a expressão [Quantidade Total] no contexto de
+			    filtro modificado (DATESYTD), exigindo uma tabela de calendário contínua.
+			*/
 			TOTALYTD(
 			    [Quantidade Total],
 			    dCalendar[Data]
 			)
+			```
 		formatString: 0
+		displayFolder: Vendas
 		lineageTag: 86935fe0-ea36-49b0-a5f1-959438fcd724
 
-	measure 'Valor Bruto PY' =
+	measure 'Valor Bruto PY' = ```
+			
+			/* ==========================================================================
+			Medida: Valor Bruto PY (Previous Year Revenue)
+			==========================================================================
+			Descrição de Negócio:
+			    Calcula o Faturamento Bruto do mesmo período no ano anterior.
+			    
+			    Esta métrica é fundamental para isolar o efeito da Sazonalidade.
+			    No varejo, permite comparar "maçãs com maçãs" (ex: Black Friday deste ano
+			    contra Black Friday do ano passado), servindo de base para o cálculo
+			    de Crescimento (YoY %).
+			
+			Nota Técnica (Context Transition):
+			    A função CALCULATE modifica o contexto de filtro original.
+			    A função SAMEPERIODLASTYEAR retorna um conjunto de datas deslocado
+			    exatamente um ano para trás em relação ao contexto atual.
+			    
+			    Exemplo: Se o filtro visual é "Março 2018", a medida calcula a soma
+			    das vendas ocorridas em "Março 2017".
+			*/
 			CALCULATE(
 			    [Valor Bruto Total],
 			    SAMEPERIODLASTYEAR(dCalendar[Data])
 			)
+			```
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		displayFolder: Vendas
 		lineageTag: 8e992bdf-b0ee-4913-93b7-000ca1294a80
 
-		annotation PBI_FormatHint = {"isGeneralNumber":true}
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
 
-	measure 'Valor Bruto YoY %' =
+	measure 'Valor Bruto YoY %' = ```
 			
+			/* ==========================================================================
+			Medida: Valor Bruto YoY % (Year-over-Year Growth)
+			==========================================================================
+			Descrição de Negócio:
+			    Calcula a taxa de crescimento (ou retração) percentual das vendas em
+			    relação ao mesmo período do ano anterior.
+			    
+			    É o principal KPI de "Velocidade" do negócio. Um número positivo indica
+			    expansão real, descontando o efeito da sazonalidade natural do varejo.
+			
+			Nota Técnica (Safe Division & Variables):
+			    1. Variáveis (VAR): Utiliza variáveis para tornar a lógica de cálculo
+			       (Atual - Anterior) explícita e legível antes da divisão.
+			    
+			    2. Função DIVIDE: A utilização da função DIVIDE é mandatória em produção
+			       ao invés do operador matemático simples (/).
+			       
+			       Motivo: A função DIVIDE trata automaticamente cenários de "Divisão por Zero"
+			       (comum quando não há histórico no ano anterior, ex: início da operação),
+			       retornando BLANK em vez de gerar erros de "Infinity" que quebrariam o visual.
+			*/
 			VAR valor_atual = [Valor Bruto Total]
 			VAR valor_anterior = [Valor Bruto PY]
 			VAR crescimento = valor_atual - valor_anterior
+			
 			RETURN
 			DIVIDE(
 			    crescimento,
 			    valor_anterior
 			)
+			```
 		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Vendas
 		lineageTag: 453fcb21-021d-4cd7-bb4c-e525004ab894
 
-	measure 'Pedidos em Comum (Afinidade)' =
+	measure 'Pedidos em Comum (Afinidade)' = ```
 			
-			// Pega os valores selecionados na linha e coluna da matriz
-			VAR produto_linha = SELECTEDVALUE('public v_dim_products'[product_category])
-			VAR produto_coluna = SELECTEDVALUE(dim_products_columns[product_category])
+			/* ==========================================================================
+			Medida: Pedidos em Comum (Afinidade) - [Market Basket Core]
+			==========================================================================
+			Descrição de Negócio:
+			    O motor do algoritmo de recomendação ("Quem comprou X, também levou Y").
+			    
+			    Esta medida calcula a intersecção de vendas entre dois produtos distintos
+			    dentro do mesmo carrinho (Order ID). É utilizada para identificar padrões
+			    de consumo e oportunidades de Cross-Sell.
 			
-			// Calcula a lista de pedidos para o produto da LINHA
-			VAR pedidos_produto_linha = CALCULATETABLE(
-			    VALUES('public v_fact_order_itens'[order_id]),
-			    'public v_dim_products'
-			)
+			Nota Técnica (Disconnected Tables & Set Theory):
+			    Implementa o padrão de "Tabelas Desconectadas" para permitir a comparação
+			    de duas dimensões idênticas (Produto A vs Produto B) sem propagação de filtro.
 			
-			// Calcula a lista de pedidos para o produto da COLUNA
-			VAR pedidos_produto_coluna = CALCULATETABLE(
-			    VALUES('public v_fact_order_itens'[order_id]),
-			    TREATAS(
-			        VALUES(dim_products_columns[product_category]),
-			        'public v_dim_products'[product_category]
+			    Lógica do Algoritmo:
+			    1. Guard Clauses (Proteção): Usa HASONEVALUE para garantir que o cálculo
+			       só ocorra no nível de célula (Produto x Produto), economizando CPU nos totais.
+			       Também evita a "Diagonal" (comparar Produto A com ele mesmo).
+			    
+			    2. Virtual Relationships (TREATAS): Usa TREATAS para aplicar o filtro da
+			       tabela auxiliar ('dim_products_columns') na tabela fato apenas durante
+			       a execução desta medida.
+			       
+			    3. Teoria de Conjuntos (INTERSECT): Isola os IDs de pedidos que existem
+			       SIMULTANEAMENTE na Lista A e na Lista B.
+			       
+			    4. Ruído Estatístico: Retorna BLANK se a contagem for <= 1 para limpar
+			       o visual de associações acidentais irrelevantes.
+			*/
+			
+			IF(
+			    HASONEVALUE('public v_dim_products'[product_category]) &&
+			    HASONEVALUE(dim_products_columns[product_category]) &&
+			    SELECTEDVALUE('public v_dim_products'[product_category]) <> SELECTEDVALUE(dim_products_columns[product_category]),
+			
+			    -- 1. Conjunto A: Pedidos contendo o produto selecionado no filtro principal
+			    VAR pedidos_produto_linha = CALCULATETABLE(
+			        VALUES('public v_fact_order_itens'[order_id]),
+			        'public v_dim_products'
 			    )
+			
+			    -- 2. Conjunto B: Pedidos contendo o produto do eixo comparativo
+			    -- Usa TREATAS para ativar o relacionamento virtual com a tabela desconectada
+			    VAR pedidos_produto_coluna = CALCULATETABLE(
+			        VALUES('public v_fact_order_itens'[order_id]),
+			        TREATAS(
+			            VALUES(dim_products_columns[product_category]),
+			            'public v_dim_products'[product_category]
+			        )
+			    )
+			
+			    -- 3. Intersecção: Pedidos que existem em A E em B
+			    VAR contagem_pedidos_comuns = COUNTROWS(INTERSECT(pedidos_produto_linha, pedidos_produto_coluna))
+			
+			    -- 4. Filtro de Ruído
+			    RETURN
+			    IF(contagem_pedidos_comuns > 1, contagem_pedidos_comuns, BLANK())
 			)
+			```
+		formatString: 0
+		displayFolder: Cross Sell
+		lineageTag: 32f034e3-e487-4263-8c11-d0e62bd93aac
+
+	measure 'Total Pedidos Categoria (Linha)' = ```
 			
-			// Encontra a interseção (pedidos em comum)
-			VAR pedidos_comuns = INTERSECT(pedidos_produto_linha, pedidos_produto_coluna)
+			/* ==========================================================================
+			Medida: Total Pedidos Categoria (Linha) - [Denominador da Probabilidade]
+			==========================================================================
+			Descrição de Negócio:
+			    Calcula o volume total de vendas da "Categoria Âncora" (Produto X) 
+			    selecionada pelo usuário.
+			    
+			    Esta medida serve como o denominador fixo para o cálculo da Probabilidade 
+			    Condicional P(Y|X). Ela responde: "Quantas vezes o produto X foi vendido 
+			    no total?", independentemente de com qual produto Y estamos comparando.
 			
-			// Conta o resultado
-			VAR contagem_pedidos_comuns = COUNTROWS(pedidos_comuns)
+			Nota Técnica (Disconnected Tables & REMOVEFILTERS):
+			    Esta medida é projetada para funcionar dentro de uma matriz ou gráfico onde
+			    o eixo é uma Tabela Desconectada ('dim_products_columns').
+			    
+			    1. CALCULATE: Modifica o contexto de filtro.
+			    2. REMOVEFILTERS: Remove explicitamente qualquer filtro vindo da tabela
+			       'dim_products_columns'.
+			       
+			    Por que isso é necessário?
+			    Sem o REMOVEFILTERS, o contexto visual do gráfico filtraria a medida para
+			    mostrar apenas a intersecção (X e Y). Nós precisamos que esta medida
+			    retorne o Total de X constante em todas as barras para que a divisão
+			    (Intersecção / Total X) funcione matematicamente.
+			*/
 			
-			// Lógica de retorno
+			CALCULATE(
+			    [Total de Pedidos],
+			    REMOVEFILTERS(dim_products_columns)
+			)
+			```
+		formatString: 0
+		displayFolder: Vendas
+		lineageTag: 2b93bfdc-d67d-4ec5-ba8b-87c5f335bbab
+
+	measure 'Probabilidade (Y | X)' = ```
+			
+			/* ==========================================================================
+			Medida: Probabilidade (Y | X) - [Conditional Probability]
+			==========================================================================
+			Descrição de Negócio:
+			    Calcula a probabilidade de um cliente comprar o Produto Y (Eixo do Gráfico),
+			    dado que ele já comprou o Produto X (Selecionado no Filtro).
+			    
+			    Também conhecida como "Confiança" (Confidence) em Mineração de Regras de 
+			    Associação. É o KPI que define a eficiência de uma recomendação de Cross-Sell.
+			
+			Nota Técnica (Math & Context):
+			    Implementa a fórmula estatística P(B|A) = P(A ∩ B) / P(A).
+			    
+			    - Numerador: [Pedidos em Comum] (Intersecção).
+			    - Denominador: [Total Pedidos Categoria (Linha)] (Total do Antecedente).
+			    
+			    A função DIVIDE é utilizada para garantir a segurança do cálculo, retornando
+			    BLANK automaticamente caso o denominador seja zero (ex: categorias novas 
+			    sem histórico de vendas).
+			*/
+			
+			DIVIDE(
+			    [Pedidos em Comum (Afinidade)],
+			    [Total Pedidos Categoria (Linha)]
+			)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: Cross Sell
+		lineageTag: b2f41f36-e880-455b-b503-48b5539fa55a
+
+	measure 'Total Clientes em Risco' = ```
+			
+			/* ==========================================================================
+			Medida: Total Clientes em Risco - [Churn Alert KPI]
+			==========================================================================
+			Descrição de Negócio:
+			    Contagem de clientes classificados no segmento "Em Risco (VIPs)".
+			    
+			    Quem são eles? Clientes que possuem alto Score Monetário (gastaram muito
+			    no passado), mas baixo Score de Recência (não compram há muito tempo).
+			    
+			    Esta é a métrica mais crítica para o time de CRM, pois representa
+			    o "Churn de Alto Valor". Recuperar um cliente deste grupo é estatisticamente
+			    mais barato e rentável do que adquirir novos clientes frios.
+			
+			Nota Técnica (Segmentation Filter):
+			    Utiliza a tabela calculada 'd_rfm' como base.
+			    
+			    A função CALCULATE aplica um filtro explícito sobre a coluna [Segmento RFM],
+			    isolando apenas o cluster "Em Risco (VIPs)".
+			    
+			    Obs: Utilizamos DISTINCTCOUNT no ID único para garantir precisão, embora
+			    na tabela d_rfm a granularidade já seja de 1 linha por cliente.
+			*/
+			
+			CALCULATE(
+			    DISTINCTCOUNT('d_rfm'[customer_unique_id]), 
+			    'd_rfm'[Segmento RFM] = "Em Risco (VIPs)"
+			)
+			```
+		formatString: 0
+		displayFolder: RFM
+		lineageTag: a0168a0a-d6a5-4eca-bcf4-b3749d1264b9
+
+	measure 'Taxa de Retenção (Ativos)' = ```
+			
+			/* ==========================================================================
+			Medida: Taxa de Retenção (Ativos) - [Base Health]
+			==========================================================================
+			Descrição de Negócio:
+			    Mede a proporção de clientes considerados "Vivos" ou "Ativos" em relação
+			    ao total histórico de cadastros.
+			    
+			    Diferente do Churn tradicional (baseado em cancelamento de contrato),
+			    no varejo definimos "Ativo" com base no comportamento recente (Recência)
+			    e valor (Monetário).
+			    
+			    Segmentos considerados Ativos:
+			    - Campeões, Leais, Novos, Promissores e até os Em Risco (que ainda
+			      estão no radar de recuperação).
+			    
+			    Segmentos considerados Churn (Perdidos):
+			    - Hibernando/Perdidos.
+			
+			Nota Técnica (Set Filtering):
+			    Utiliza o operador IN para filtrar múltiplos segmentos de texto de uma vez,
+			    simplificando a sintaxe em comparação com múltiplos OR().
+			*/
+			VAR ClientesAtivos = 
+			    CALCULATE(
+			        COUNTROWS('d_rfm'), 
+			        'd_rfm'[Segmento RFM] IN {"Campeões", "Leais", "Novos Promissores", "Novos", "Em Risco (VIPs)"}
+			    )
+			VAR TotalClientes = COUNTROWS('d_rfm')
+			
+			RETURN
+			    DIVIDE(ClientesAtivos, TotalClientes)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: RFM
+		lineageTag: 9141f680-021c-440f-ae47-6527771d175a
+
+	measure 'Taxa de Recompra Global' = ```
+			
+			/* ==========================================================================
+			Medida: Taxa de Recompra Global - [Retention KPI]
+			==========================================================================
+			Descrição de Negócio:
+			    Percentual da base de clientes que realizou mais de uma compra na história.
+			    
+			    No contexto de marketplace (Olist), esta métrica tende a ser baixa, o que
+			    evidencia o desafio de fidelização. Um aumento nesta taxa impacta 
+			    diretamente o LTV (Lifetime Value) e reduz a dependência de aquisição
+			    paga (CAC).
+			
+			Nota Técnica (Filter Context):
+			    Utiliza a tabela dimensão 'd_rfm' (Calculada) como base.
+			    
+			    - Numerador: Filtra clientes onde a coluna [Frequencia] > 1.
+			    - Denominador: Total de clientes distintos.
+			    
+			    A simplicidade desta medida esconde a complexidade da tabela d_rfm, que já
+			    pré-calculou a frequência de cada cliente único no SQL/DAX.
+			*/
+			VAR ClientesComMaisDeUmaCompra = 
+			    CALCULATE(
+			        COUNTROWS('d_rfm'),
+			        'd_rfm'[Frequencia] > 1
+			    )
+			VAR TotalClientes = COUNTROWS('d_rfm')
+			
+			RETURN
+			    DIVIDE(ClientesComMaisDeUmaCompra, TotalClientes)
+			```
+		formatString: 0.00%;-0.00%;0.00%
+		displayFolder: RFM
+		lineageTag: c00483b1-c2c0-443c-9f9e-b7b252b7a42f
+
+	measure 'Vendas (Regressão Linear)' = ```
+			
+			/* ==========================================================================
+			Medida: Vendas (Regressão Linear) - [Predictive Analytics]
+			==========================================================================
+			Descrição de Negócio:
+			    Modelo estatístico preditivo que traça a linha de tendência matemática
+			    das vendas ($y = mx + b$).
+			    
+			    Objetivo: Identificar se a tendência estrutural do negócio é de crescimento
+			    ou queda, ignorando a volatilidade diária. Além disso, projeta essa 
+			    tendência para o futuro (Forecasting), servindo de base para metas.
+			
+			Nota Técnica (Statistical DAX):
+			    Implementação manual do "Método dos Mínimos Quadrados" (Ordinary Least Squares).
+			    
+			    1. Training Set (Conjunto de Treino):
+			       Definir uma 'DataCorte' (01/08/2018) para isolar os dados históricos
+			       confiáveis. O algoritmo aprende a inclinação (Slope) usando apenas 
+			       dados anteriores a esta data, evitando que a queda de dados no final 
+			       do dataset (Set/Out) contamine a projeção.
+			       
+			    2. Cálculo dos Coeficientes:
+			       - Slope (m): A inclinação da reta (Taxa de crescimento diário).
+			       - Intercept (b): O ponto onde a reta cruza o eixo Y.
+			       
+			    3. Projeção (Forecasting):
+			       Aplica a fórmula linear (y = mx + b) para todo o contexto de data,
+			       incluindo o futuro. Isso permite que a linha continue sendo desenhada
+			       mesmo onde não há vendas reais.
+			*/
+			VAR DataCorte = DATE(2018, 8, 1) -- Limite do conjunto de treino
+			
+			-- 1. Definição do Conjunto de Treino (Training Set)
+			VAR TabelaDados = 
+			    FILTER(
+			        ALL('dCalendar'),
+			        'dCalendar'[Data] < DataCorte &&
+			        NOT(ISBLANK([Valor Bruto Total]))
+			    )
+			
+			-- 2. Estatística Descritiva (Inputs da Fórmula)
+			VAR Count_N = COUNTROWS(TabelaDados)
+			VAR Sum_X   = SUMX(TabelaDados, CONVERT('dCalendar'[Data], INTEGER)) -- X = Tempo
+			VAR Sum_Y   = SUMX(TabelaDados, [Valor Bruto Total])                  -- Y = Vendas
+			VAR Sum_XY  = SUMX(TabelaDados, CONVERT('dCalendar'[Data], INTEGER) * [Valor Bruto Total])
+			VAR Sum_X2  = SUMX(TabelaDados, CONVERT('dCalendar'[Data], INTEGER) ^ 2)
+			
+			-- 3. Cálculo dos Coeficientes (Slope e Intercept)
+			VAR Slope = 
+			    DIVIDE(
+			        (Count_N * Sum_XY) - (Sum_X * Sum_Y),
+			        (Count_N * Sum_X2) - (Sum_X ^ 2)
+			    )
+			
+			VAR Intercept = 
+			    DIVIDE(
+			        Sum_Y - (Slope * Sum_X),
+			        Count_N
+			    )
+			
+			-- 4. Aplicação do Modelo (y = mx + b)
+			-- Converte a data atual do gráfico em número para aplicar na fórmula
+			VAR X_Atual = CONVERT(MAX('dCalendar'[Data]), INTEGER)
+			
+			RETURN
+			    (Slope * X_Atual) + Intercept
+			```
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		displayFolder: Forecasting
+		lineageTag: b6df883b-474c-4f55-871c-0cafcbeb3665
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure 'Vendas Média Móvel' = ```
+			
+			/* ==========================================================================
+			Medida: Vendas Média Móvel - [Trend Smoothing & Dynamic Viz]
+			==========================================================================
+			Descrição de Negócio:
+			    Calcula a média móvel das vendas em uma janela de tempo dinâmica (ex: 7, 30 dias),
+			    definida pelo usuário através de um parâmetro de simulação ("What-If").
+			    
+			    Objetivo: Suavizar a volatilidade diária (ruído) para revelar a tendência real
+			    de crescimento ou queda do faturamento a médio prazo.
+			
+			Nota Técnica (Time Intelligence & Visual Engineering):
+			    1. Parametrização: A variável 'Janela' captura o input do usuário, tornando
+			       a medida interativa (não é um cálculo estático de 7 dias).
+			    
+			    2. Janela Deslizante: Utiliza DATESINPERIOD com offset negativo para criar
+			       o intervalo de datas (Data Atual - Janela).
+			       
+			    3. Tratamento Visual (Data Cut):
+			       Aplica a mesma lógica de "Corte Rígido" (Hard Cut) em Agosto/2018.
+			       Se não fizéssemos isso, a média móvel começaria a incorporar os dias
+			       com valor zero (Setembro/Outubro), fazendo a linha verde cair artificialmente
+			       e distorcendo a leitura de tendência. Retornar BLANK() corta a linha.
+			*/
+			VAR Janela = 'Janela de Média'[Janela de Média Value]
+			VAR DataCorte = DATE(2018, 8, 1) -- Limite dos dados confiáveis
+			VAR DataAtual = MAX(dCalendar[Data])
+			
 			RETURN
 			IF(
-			    // Teste 1: Limpar a diagonal (linha = coluna)
-			    produto_linha = produto_coluna,
-			    BLANK(),
-			
-			    // Teste 2: Limpar nulos (se não houver dados para um dos lados)
-			    IF(
-			        ISBLANK(pedidos_produto_linha) || ISBLANK(pedidos_produto_coluna),
-			        BLANK(),
-			
-			        // Resultado Final: Retorna a contagem
-			        contagem_pedidos_comuns
-			    )
+			    DataAtual < DataCorte,
+			    
+			    -- Cálculo da Média na Janela Dinâmica
+			    CALCULATE(
+			        AVERAGEX(dCalendar, [Valor Bruto Total]),
+			        DATESINPERIOD(dCalendar[data], DataAtual, -Janela, DAY)
+			    ),
+			    
+			    BLANK() -- Interrompe a plotagem visualmente
 			)
-		formatString: 0
-		lineageTag: 32f034e3-e487-4263-8c11-d0e62bd93aac
+			```
+		displayFolder: Forecasting
+		lineageTag: 14c5feda-3cdf-48b9-8aad-49b35213f013
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Vendas Projetadas (Cenário)' = ```
+			
+			/* ==========================================================================
+			Medida: Vendas Projetadas (Cenário) - [What-If Simulation]
+			==========================================================================
+			Descrição de Negócio:
+			    Calcula o cenário de vendas futuras aplicando uma taxa de crescimento 
+			    (ou retração) definida pelo usuário sobre a tendência estatística atual.
+			    
+			    Objetivo: Permitir que gestores definam metas e simulem cenários estratégicos.
+			    Responde à pergunta: "Se performarmos 10% acima da nossa tendência natural,
+			    qual será o nosso faturamento em Dezembro?"
+			
+			Nota Técnica (Measure Branching & Parameters):
+			    Esta medida combina dois conceitos avançados:
+			    
+			    1. Parâmetro What-If: Captura o valor selecionado no Slicer 'Crescimento Esperado %'
+			       (ex: 0.10 para 10%).
+			       
+			    2. Base de Tendência: Utiliza a medida [Vendas (Regressão Linear)] como base,
+			       e não as vendas do ano anterior.
+			       
+			       Por que usar a Regressão? 
+			       Para empresas em hipercrescimento (como a Olist em 2017/2018), usar o ano
+			       anterior como base gera metas irreais ou muito baixas. A Regressão Linear
+			       projeta o "Caminho Natural" (Inércia), e o cenário projeta o "Caminho da Meta"
+			       (Esforço).
+			*/
+			
+			
+			VAR TaxaCrescimento = 'Crescimento Esperado %'[Crescimento Esperado % Value]
+			VAR BaseTendencia = [Vendas (Regressão Linear)] -- A linha de tendência estatística
+			
+			-- Projeta: Tendência Matemática * (1 + Fator de Crescimento)
+			RETURN
+			    BaseTendencia * (1 + TaxaCrescimento)
+			```
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		displayFolder: Forecasting
+		lineageTag: e4fe1469-a4e0-4e15-8d50-068407e7f9c9
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	measure 'Valor Bruto (Visual Cortado)' = ```
+			
+			/* ==========================================================================
+			Medida: Valor Bruto (Visual Cortado) - [Data Viz Helper]
+			==========================================================================
+			Descrição de Negócio:
+			    Variação da medida de Faturamento Bruto projetada especificamente para
+			    gráficos de tendência temporal.
+			    
+			    Esta medida aplica um "Corte Manual" (Hard Cut) em Agosto de 2018.
+			    Motivo: O dataset original (Olist) possui dados incompletos/parciais nos
+			    últimos meses, o que gerava uma queda artificial ("Cliff Effect") nos 
+			    gráficos, distorcendo a percepção de tendência do usuário.
+			
+			Nota Técnica (BLANK vs ZERO em Gráficos):
+			    Utilizamos a função BLANK() intencionalmente quando a data ultrapassa
+			    o corte.
+			    
+			    Comportamento no Power BI:
+			    - Retornar 0: O gráfico desenharia uma linha despencando até o eixo.
+			    - Retornar BLANK: O gráfico interrompe a plotagem da linha naquele ponto.
+			    
+			    Isso permite comparar o Real (que para em Agosto) com a Projeção 
+			    (que continua até Dezembro) sem poluição visual.
+			*/
+			VAR DataCorte = DATE(2018, 8, 1) -- Data limite da integridade dos dados
+			
+			RETURN
+			IF(
+			    MAX(dCalendar[data]) < DataCorte,
+			    [Valor Bruto Total],
+			    BLANK() -- Interrompe a linha visualmente
+			)
+			```
+		displayFolder: Vendas
+		lineageTag: 0f11fddf-f786-4173-a48d-f17ed47a3e2d
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Titulo Dinamico Afinidade' = ```
+			
+			/* ==========================================================================
+			Medida: Titulo Dinamico Afinidade - [Smart Header]
+			==========================================================================
+			Descrição de Negócio:
+			    Altera o título do gráfico de recomendações com base na interação do usuário.
+			    
+			    Objetivo:
+			    1. Instrução (Estado Zero): Quando nada está selecionado, instrui o usuário
+			       a clicar no menu lateral.
+			    2. Confirmação (Estado Ativo): Quando uma categoria é clicada, o título
+			       confirma qual produto está sendo analisado ("Quem compra Cama..."),
+			       eliminando ambiguidades sobre os dados exibidos.
+			
+			Nota Técnica (Context Awareness):
+			    Utiliza a função ISFILTERED para detectar se o contexto de filtro da
+			    coluna [product_category] foi modificado por uma interação do usuário (Slicer).
+			    
+			    Dependendo do estado (Verdadeiro/Falso), a medida retorna strings de texto
+			    diferentes, utilizando concatenação (&) para inserir o nome do item
+			    selecionado (SELECTEDVALUE) dinamicamente no texto.
+			*/
+			IF(
+			    ISFILTERED('public v_dim_products'[product_category]),
+			    "2. Quem compra " & SELECTEDVALUE('public v_dim_products'[product_category]) & " também leva...",
+			    "<- Selecione uma categoria ao lado para ver recomendações"
+			)
+			```
+		displayFolder: Cross Sell
+		lineageTag: e1d3655a-9e3b-405e-ae49-7e8cd1f0279d
+
+	measure 'Mensagem Cartão Central' = ```
+			
+			/* ==========================================================================
+			Medida: Mensagem Cartão Central - [Guided Analytics / UX]
+			==========================================================================
+			Descrição de Negócio:
+			    Elemento de interface dinâmica que atua como um "Assistente de Navegação".
+			    
+			    Em vez de usar caixas de texto estáticas, esta medida detecta o estado
+			    atual da interação do usuário e fornece a instrução correta para o 
+			    próximo passo.
+			    
+			    Estados mapeados:
+			    1. Estado Inicial: Pede para selecionar um produto (Gatilho).
+			    2. Estado Intermediário: Confirma a seleção e aponta para o resultado.
+			    3. Estado Final: Exibe o resumo do insight (Volume de afinidade entre X e Y).
+			
+			Nota Técnica (State Management):
+			    Utiliza variáveis (VAR) para capturar o contexto de filtro de dois visuais
+			    distintos (Gráfico da Esquerda e Gráfico da Direita).
+			    
+			    A função SWITCH(TRUE()...) atua como uma máquina de estados:
+			    - ISBLANK(SelecaoEsquerda): Verifica se o filtro principal está vazio.
+			    - ISBLANK(SelecaoDireita): Verifica se o filtro secundário está vazio.
+			    
+			    Isso garante que o dashboard seja autoexplicativo, eliminando a necessidade
+			    de treinamento ou manuais de uso.
+			*/
+			VAR SelecaoEsquerda = SELECTEDVALUE('public v_dim_products'[product_category])
+			VAR SelecaoDireita = SELECTEDVALUE(dim_products_columns[product_category])
+			VAR Afinidade = [Pedidos em Comum (Afinidade)]
+			
+			RETURN
+			SWITCH(TRUE(),
+			    -- Passo 1: Nenhum filtro aplicado na origem
+			    ISBLANK(SelecaoEsquerda), "1️⃣ Clique em uma categoria na esquerda para começar.",
+			    
+			    -- Passo 2: Origem definida, aguardando foco no destino
+			    ISBLANK(SelecaoDireita), "2️⃣ Agora veja as recomendações ao lado 👉",
+			    
+			    -- Passo 3: Interação completa (Exibe o Insight em Texto)
+			    NOT(ISBLANK(SelecaoDireita)), FORMAT(Afinidade, "#,##0") & " Pedidos em comum entre " & SelecaoEsquerda & " e " & SelecaoDireita
+			)
+			```
+		displayFolder: Cross Sell
+		lineageTag: d4b49df7-d60b-427f-b1bb-5445059a0c93
+
+	measure 'Lift (Alavancagem)' = ```
+			
+			/* ==========================================================================
+			Medida: Lift (Alavancagem) - [Statistical Strength]
+			==========================================================================
+			Descrição de Negócio:
+			    Métrica estatística que mede a força da associação entre dois produtos,
+			    isolando o "fator popularidade".
+			    
+			    Responde à pergunta: "A compra do Produto X aumenta ou diminui a chance
+			    real de comprar o Produto Y, comparado ao acaso?"
+			    
+			    Interpretação:
+			    - Lift > 1: Associação Positiva (X impulsiona Y).
+			    - Lift = 1: Neutro (Eventos independentes).
+			    - Lift < 1: Associação Negativa (Quem compra X evita Y).
+			
+			Nota Técnica (Context Manipulation):
+			    Implementa a fórmula Bayesiana: Lift = P(Y|X) / P(Y).
+			    
+			    O desafio técnico é calcular P(Y) (Probabilidade Global) dentro de um 
+			    visual que já está filtrado por X.
+			    
+			    Solução DAX:
+			    1. REMOVEFILTERS: Remove o filtro da seleção atual (Produto X).
+			    2. TREATAS: Força o filtro do eixo do gráfico (Produto Y) na tabela fato
+			       para calcular sua performance isolada no site todo.
+			*/
+			
+			-- 1. Probabilidade Condicional (Já calculada anteriormente)
+			VAR Prob_Condicional = [Probabilidade (Y | X)]
+			
+			-- 2. Probabilidade Global de Y (Popularidade natural do produto Y)
+			VAR TotalPedidosSite = 
+			    CALCULATE(
+			        [Total de Pedidos], 
+			        REMOVEFILTERS() -- Remove todos os filtros para pegar o total geral do e-commerce
+			    )
+			
+			VAR PedidosComY_Global = 
+			    CALCULATE(
+			        [Total de Pedidos],
+			        -- Remove o filtro da Categoria X (Esquerda) para não enviesar
+			        REMOVEFILTERS('public v_dim_products'), 
+			        -- Aplica o filtro da Categoria Y (Eixo do gráfico) na tabela fato
+			        TREATAS(VALUES(dim_products_columns[product_category]), 'public v_dim_products'[product_category])
+			    )
+			
+			VAR Prob_Global = DIVIDE(PedidosComY_Global, TotalPedidosSite)
+			
+			-- 3. O Cálculo do Lift
+			RETURN
+			    IF(
+			        Prob_Global > 0 && Prob_Condicional > 0,
+			        DIVIDE(Prob_Condicional, Prob_Global),
+			        BLANK()
+			    )
+			```
+		displayFolder: Cross Sell
+		lineageTag: 0fee159c-8b05-4356-bd48-07d0a3b00e7a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Label Produto Selecionado' = ```
+			
+			/* ==========================================================================
+			Medida: Label Produto Selecionado - [Dynamic UI Header]
+			==========================================================================
+			Descrição de Negócio:
+			    Gera o título dinâmico para o Painel de Detalhes do Produto.
+			    
+			    Função de UX (User Experience): Fornece feedback imediato sobre a interação.
+			    - Se o usuário selecionou um produto: Mostra o nome do produto.
+			    - Se não selecionou nada: Mostra uma mensagem instrucional ("Selecione um item..."),
+			      evitando que o painel fique com aspecto de "quebrado" ou vazio.
+			
+			Nota Técnica (Single Value Protection):
+			    Utiliza a função SELECTEDVALUE, que retorna o valor da coluna apenas se
+			    houver um único valor distinto no contexto de filtro atual.
+			    
+			    Lógica de Fallback: Se não houver seleção (ou se houver múltiplas seleções),
+			    a função retorna BLANK, que é capturado pelo IF(ISBLANK...) para exibir
+			    o texto de placeholder padrão.
+			*/
+			VAR Selecao = SELECTEDVALUE('public v_dim_products'[product_category])
+			
+			RETURN 
+			IF(
+			    ISBLANK(Selecao), 
+			    "Selecione um item...", 
+			    Selecao
+			)
+			```
+		displayFolder: Cross Sell
+		lineageTag: bdbd1221-f4bb-4bd3-8205-f0d4eb03fc2a
+
+	measure 'Icone Categoria (Emoji)' = ```
+			
+			/* ==========================================================================
+			Medida: Icone Categoria (Emoji) - [Dynamic UI Element]
+			==========================================================================
+			Descrição de Negócio:
+			    Gera um elemento visual (Ícone/Emoji) dinâmico baseado na categoria de 
+			    produto selecionada pelo usuário.
+			    
+			    Objetivo: Melhorar a Experiência do Usuário (UX) no Painel de Detalhes, 
+			    fornecendo reconhecimento visual imediato do contexto (ex: Cama = 🛏️) 
+			    sem a necessidade de ler o texto.
+			
+			Nota Técnica (Performance & Simplicity):
+			    Optar por renderizar Emojis como texto (String) ao invés de carregar 
+			    imagens externas (URLs).
+			    
+			    Vantagens desta abordagem:
+			    1. Zero Latência: Não há dependência de requisições HTTP para carregar imagens.
+			    2. Leveza: Não aumenta o tamanho do arquivo .pbix com binários.
+			    3. Manutenibilidade: Uso de 'Pattern Matching' (CONTAINSSTRING) para agrupar 
+			       subcategorias similares (ex: "Roupa Feminina" e "Roupa Masculina" recebem 
+			       o mesmo ícone 👗), reduzindo a necessidade de mapear cada item individualmente.
+			*/
+			VAR Categoria = SELECTEDVALUE('public v_dim_products'[product_category])
+			
+			RETURN
+			SWITCH( TRUE(),
+			    -- Se nada estiver selecionado
+			    ISBLANK(Categoria), "👆",
+			
+			    -- Casa, Móveis e Decoração
+			    CONTAINSSTRING(Categoria, "Cama Mesa"), "🛏️",
+			    CONTAINSSTRING(Categoria, "Moveis Decoracao"), "🛋️",
+			    CONTAINSSTRING(Categoria, "Moveis Sala"), "📺",
+			    CONTAINSSTRING(Categoria, "Moveis Cozinha"), "🍽️",
+			    CONTAINSSTRING(Categoria, "Moveis Quarto"), "🛌",
+			    CONTAINSSTRING(Categoria, "Moveis Escritorio"), "🗄️",
+			    CONTAINSSTRING(Categoria, "Moveis Colchao"), "🛏️",
+			    CONTAINSSTRING(Categoria, "Casa Conforto"), "🏠",
+			    CONTAINSSTRING(Categoria, "Casa Construcao"), "🧱",
+			    CONTAINSSTRING(Categoria, "Utilidades Domesticas"), "🍳",
+			    CONTAINSSTRING(Categoria, "Artes E Artesanato"), "🧶",
+			    CONTAINSSTRING(Categoria, "Artes"), "🎨",
+			    CONTAINSSTRING(Categoria, "Flores"), "💐",
+			    CONTAINSSTRING(Categoria, "La Cuisine"), "👨‍🍳",
+			    CONTAINSSTRING(Categoria, "Pet Shop"), "🐶",
+			    CONTAINSSTRING(Categoria, "Jardim"), "🌻",
+			
+			    -- Tecnologia e Eletrônicos
+			    CONTAINSSTRING(Categoria, "Informatica"), "💻",
+			    CONTAINSSTRING(Categoria, "Pcs"), "🖥️",
+			    CONTAINSSTRING(Categoria, "Pc Gamer"), "🕹️",
+			    CONTAINSSTRING(Categoria, "Tablets"), "📱",
+			    CONTAINSSTRING(Categoria, "Telefonia"), "📱",
+			    CONTAINSSTRING(Categoria, "Eletronicos"), "⚡",
+			    CONTAINSSTRING(Categoria, "Consoles Games"), "🎮",
+			    CONTAINSSTRING(Categoria, "Audio"), "🔊",
+			    CONTAINSSTRING(Categoria, "Cine Foto"), "📷",
+			    CONTAINSSTRING(Categoria, "Seguranca"), "📹", -- Sinalização e Segurança / Construção Ferramentas Segurança
+			
+			    -- Moda e Beleza
+			    CONTAINSSTRING(Categoria, "Beleza Saude"), "💄",
+			    CONTAINSSTRING(Categoria, "Perfumaria"), "🧴",
+			    CONTAINSSTRING(Categoria, "Fashion Calcados"), "👠",
+			    CONTAINSSTRING(Categoria, "Fashion Bolsas"), "👜",
+			    CONTAINSSTRING(Categoria, "Fashion Roupa"), "👗", -- Pega Feminina, Masculina, Infanto
+			    CONTAINSSTRING(Categoria, "Fashion Underwear"), "👙",
+			    CONTAINSSTRING(Categoria, "Fashion Esporte"), "👟",
+			    CONTAINSSTRING(Categoria, "Relogios"), "⌚",
+			    CONTAINSSTRING(Categoria, "Malas"), "🧳",
+			
+			    -- Bebês e Brinquedos
+			    CONTAINSSTRING(Categoria, "Bebes"), "🍼",
+			    CONTAINSSTRING(Categoria, "Fraldas"), "👶",
+			    CONTAINSSTRING(Categoria, "Brinquedos"), "🧸",
+			
+			    -- Ferramentas e Construção
+			    CONTAINSSTRING(Categoria, "Ferramentas"), "🛠️", -- Pega todas as de ferramentas
+			    CONTAINSSTRING(Categoria, "Construcao"), "🔨",
+			    CONTAINSSTRING(Categoria, "Automotivo"), "🚗",
+			    CONTAINSSTRING(Categoria, "Agro"), "🚜",
+			    CONTAINSSTRING(Categoria, "Industria"), "🏭",
+			    CONTAINSSTRING(Categoria, "Climatizacao"), "❄️",
+			
+			    -- Esporte e Lazer
+			    CONTAINSSTRING(Categoria, "Esporte Lazer"), "⚽",
+			    CONTAINSSTRING(Categoria, "Musica"), "🎸", -- Instrumentos Musicais / Musica
+			    CONTAINSSTRING(Categoria, "Cds Dvds"), "💿",
+			    CONTAINSSTRING(Categoria, "Dvds Blu Ray"), "📀",
+			
+			    -- Alimentos e Bebidas
+			    CONTAINSSTRING(Categoria, "Alimentos"), "🍔",
+			    CONTAINSSTRING(Categoria, "Bebidas"), "🍹",
+			    CONTAINSSTRING(Categoria, "Cafe"), "☕", -- Portateis Casa Forno E Cafe
+			
+			    -- Eletrodomésticos
+			    CONTAINSSTRING(Categoria, "Eletrodomesticos"), "🧊", -- Geladeira/Freezer
+			    CONTAINSSTRING(Categoria, "Eletroportateis"), "🥣", -- Batedeira
+			    CONTAINSSTRING(Categoria, "Portateis Cozinha"), "🔪",
+			
+			    -- Papelaria e Livros
+			    CONTAINSSTRING(Categoria, "Livros"), "📚",
+			    CONTAINSSTRING(Categoria, "Papelaria"), "📎",
+			
+			    -- Diversos
+			    CONTAINSSTRING(Categoria, "Cool Stuff"), "😎",
+			    CONTAINSSTRING(Categoria, "Artigos De Festas"), "🎉",
+			    CONTAINSSTRING(Categoria, "Artigos De Natal"), "🎄",
+			    CONTAINSSTRING(Categoria, "Market Place"), "🏪",
+			    CONTAINSSTRING(Categoria, "Seguros"), "🛡️",
+			
+			    -- Default (Se algo não casar)
+			    "📦"
+			)
+			```
+		displayFolder: Cross Sell
+		lineageTag: d39f4a33-d186-4ba9-95cf-19b46dc2d9b7
 
 	partition Medidas = m
 		mode: import

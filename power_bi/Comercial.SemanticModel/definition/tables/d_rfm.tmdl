@@ -1,0 +1,172 @@
+table d_rfm
+	lineageTag: e7fd1fc4-36c1-4f92-a45e-d2adf3f8d57e
+
+	column customer_unique_id
+		lineageTag: ad72a124-a3d7-46b6-b360-642363c8b8c2
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: public v_dim_customers[customer_unique_id]
+
+		annotation SummarizationSetBy = Automatic
+
+	column RecenciaDias
+		formatString: 0
+		lineageTag: 85e33dc1-9622-445c-b540-1ebc8b38bde9
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [RecenciaDias]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Frequencia
+		formatString: 0
+		lineageTag: 8c8caabb-b4e2-48d9-96df-0b4f3aebcaa3
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Frequencia]
+
+		annotation SummarizationSetBy = Automatic
+
+	column Monetario
+		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
+		lineageTag: 2ca29d57-76c1-4010-a413-98542bee32cd
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Monetario]
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
+
+	column R_Score
+		formatString: 0
+		lineageTag: 35ad8a4b-d380-47e8-8a8c-b983f6f1997a
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [R_Score]
+
+		annotation SummarizationSetBy = Automatic
+
+	column F_Score
+		formatString: 0
+		lineageTag: 8bad9aee-d5f5-4a68-8c25-15013d368a82
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [F_Score]
+
+		annotation SummarizationSetBy = Automatic
+
+	column M_Score
+		formatString: 0
+		lineageTag: 354ae140-dbb5-4d8d-85ca-3f14de64b3b0
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [M_Score]
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'Segmento RFM'
+		lineageTag: 8bb2baef-6675-4c17-99f5-be41d9a51540
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Segmento RFM]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition d_rfm = calculated
+		mode: import
+		source = ```
+				
+				/* ==========================================================================
+				Tabela Calculada: d_rfm - [Customer Segmentation Engine]
+				==========================================================================
+				Descrição de Negócio:
+				    Implementação do algoritmo clássico de segmentação RFM (Recência, Frequência, Valor).
+				    
+				    Objetivo: Classificar a base de clientes em clusters comportamentais para 
+				    estratégias de CRM (ex: Recuperação de Churn, Fidelização, Onboarding).
+				    
+				    Output: Uma tabela dimensão contendo um perfil único por cliente (Granularidade 1:1),
+				    com Scores de 1 a 5 e o Segmento Final (ex: "Campeões", "Em Risco").
+				
+				Nota Técnica (Algorithm Design):
+				    1. Tratamento Temporal (Static Reference): 
+				       Como o dataset é histórico (encerrado em 2018), não utiliza a função TODAY().
+				       Fixa a data de referência no último pedido registrado para simular a análise
+				       no "tempo presente" da época, evitando que todos os clientes parecessem inativos.
+				
+				    2. Agregação (Granularity Shift):
+				       Utiliza SUMMARIZE para reduzir a granularidade de "Transações" (Fato)
+				       para "Clientes Únicos" (Dimensão), calculando os KPIs base (Dias sem comprar, Qtd Pedidos, Total Gasto).
+				
+				    3. Scoring Híbrido (Percentile vs. Heuristic):
+				       - Recência e Monetário: Usamos PERCENTILEX (Estatística) para dividir a base
+				         em quintis (Top 20% = Nota 5), garantindo distribuição justa.
+				       - Frequência: Devido à natureza do varejo esporádico da Olist (96% dos clientes 
+				         compraram apenas 1 vez), percentis não funcionariam. Aplicamos regras fixas 
+				         manuais (Heurística): 1 compra = Nota 1; >4 compras = Nota 5.
+				*/
+				VAR DataReferencia = MAX('public v_fact_order_itens'[order_purchase_timestamp]) -- Data do "Hoje" simulado
+				
+				-- 1. Tabela Virtual: Agregação dos KPIs por Cliente
+				VAR TabelaBase = 
+				    SUMMARIZE(
+				        'public v_dim_customers',
+				        'public v_dim_customers'[customer_unique_id],
+				        "RecenciaDias", DATEDIFF(MAX('public v_fact_order_itens'[order_purchase_timestamp]), DataReferencia, DAY),
+				        "Frequencia", DISTINCTCOUNT('public v_fact_order_itens'[order_id]),
+				        "Monetario", SUM('public v_fact_order_itens'[price])
+				    )
+				
+				-- 2. Scoring: Atribuição de Notas (1 a 5)
+				VAR TabelaComScores = 
+				    ADDCOLUMNS(
+				        TabelaBase,
+				        "R_Score", 
+				            VAR R_Pontos = [RecenciaDias]
+				            RETURN SWITCH(TRUE(),
+				                -- Menor Recência = Maior Nota (Inversamente Proporcional)
+				                R_Pontos <= PERCENTILEX.INC(TabelaBase, [RecenciaDias], 0.2), 5, -- Top 20% mais recentes
+				                R_Pontos <= PERCENTILEX.INC(TabelaBase, [RecenciaDias], 0.4), 4,
+				                R_Pontos <= PERCENTILEX.INC(TabelaBase, [RecenciaDias], 0.6), 3,
+				                R_Pontos <= PERCENTILEX.INC(TabelaBase, [RecenciaDias], 0.8), 2,
+				                1 -- Cauda longa de inativos
+				            ),
+				        "F_Score", 
+				            -- Regra Manual para lidar com baixa recorrência do marketplace
+				            SWITCH(TRUE(),
+				                [Frequencia] >= 4, 5,
+				                [Frequencia] = 3, 4,
+				                [Frequencia] = 2, 3,
+				                TRUE(), 1
+				            ),
+				        "M_Score", 
+				            VAR M_Pontos = [Monetario]
+				            RETURN SWITCH(TRUE(),
+				                -- Maior Valor = Maior Nota (Diretamente Proporcional)
+				                M_Pontos >= PERCENTILEX.INC(TabelaBase, [Monetario], 0.8), 5, -- Top 20% maiores gastos
+				                M_Pontos >= PERCENTILEX.INC(TabelaBase, [Monetario], 0.6), 4,
+				                M_Pontos >= PERCENTILEX.INC(TabelaBase, [Monetario], 0.4), 3,
+				                M_Pontos >= PERCENTILEX.INC(TabelaBase, [Monetario], 0.2), 2,
+				                1 
+				            )
+				    )
+				
+				-- 3. Segmentação Final: Clusterização baseada nos Scores
+				RETURN
+				    ADDCOLUMNS(
+				        TabelaComScores,
+				        "Segmento RFM", 
+				        SWITCH(TRUE(),
+				            [R_Score] >= 4 && [F_Score] + [M_Score] >= 8, "Campeões",    -- A Elite (Recente + Gasta Muito)
+				            [R_Score] >= 3 && [F_Score] >= 3, "Leais",                   -- Base de sustentação
+				            [R_Score] >= 3, "Novos Clientes",                            -- Recentes (ainda sem frequência alta)
+				            [R_Score] <= 2 && [M_Score] >= 4, "Em Risco (VIPs)",         -- ALERTA: Gastava muito e sumiu
+				            [R_Score] <= 2, "Hibernando/Perdidos",                       -- Inativos de baixo valor
+				            "Outros"
+				        )
+				    )
+				```
+
+	annotation PBI_Id = f92196b82db344bb91ac4301b606d592
+

@@ -1,0 +1,27 @@
+table 'Crescimento Esperado %'
+	lineageTag: f3da6d8b-95d4-4903-b4dc-db348e3b806a
+
+	measure 'Crescimento Esperado % Value' = SELECTEDVALUE('Crescimento Esperado %'[Crescimento Esperado %])
+		lineageTag: 01ea0a97-e04a-4e43-a476-7d0560f2c28f
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column 'Crescimento Esperado %'
+		formatString: 0%;-0%;0%
+		lineageTag: 4fb58713-b862-4d39-9541-5f3a194c4fe6
+		summarizeBy: none
+		sourceColumn: [Value]
+
+		extendedProperty ParameterMetadata =
+				{
+				  "version": 0
+				}
+
+		annotation SummarizationSetBy = User
+
+	partition 'Crescimento Esperado %' = calculated
+		mode: import
+		source = GENERATESERIES(-0.5, 0.5, 0.05)
+
+	annotation PBI_Id = 4ecdd0faacc64d0c9397dfb86c8a174b
+

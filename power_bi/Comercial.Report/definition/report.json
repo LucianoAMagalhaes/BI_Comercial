@@ -9,6 +9,15 @@
         "page": "1.3.95"
       },
       "type": "SharedResources"
+    },
+    "customTheme": {
+      "name": "Simulator_-_Leo_Karpa7098336049483129.json",
+      "reportVersionAtImport": {
+        "visual": "2.1.0",
+        "report": "2.1.0",
+        "page": "2.0.0"
+      },
+      "type": "RegisteredResources"
     }
   },
   "objects": {
@@ -48,6 +57,82 @@
           "name": "CY24SU10",
           "path": "BaseThemes/CY24SU10.json",
           "type": "BaseTheme"
+        },
+        {
+          "name": "brazil.states.topo",
+          "path": "Shapemaps/brazil.states.topo.json",
+          "type": "ShapeMap"
+        }
+      ]
+    },
+    {
+      "name": "RegisteredResources",
+      "type": "RegisteredResources",
+      "items": [
+        {
+          "name": "Simulator_-_Leo_Karpa7098336049483129.json",
+          "path": "Simulator_-_Leo_Karpa7098336049483129.json",
+          "type": "CustomTheme"
+        },
+        {
+          "name": "BackgroundsPowerBI21664226119204277.jpg",
+          "path": "BackgroundsPowerBI21664226119204277.jpg",
+          "type": "Image"
+        },
+        {
+          "name": "BackgroundsPowerBI37295471158184346.jpg",
+          "path": "BackgroundsPowerBI37295471158184346.jpg",
+          "type": "Image"
+        },
+        {
+          "name": "home-white8850043806966005.png",
+          "path": "home-white8850043806966005.png",
+          "type": "Image"
+        },
+        {
+          "name": "sales-white1228785290112947.png",
+          "path": "sales-white1228785290112947.png",
+          "type": "Image"
+        },
+        {
+          "name": "carrinho-white4674656206286162.png",
+          "path": "carrinho-white4674656206286162.png",
+          "type": "Image"
+        },
+        {
+          "name": "clientes-white7318654558725132.png",
+          "path": "clientes-white7318654558725132.png",
+          "type": "Image"
+        },
+        {
+          "name": "analise-white011614402445313199.png",
+          "path": "analise-white011614402445313199.png",
+          "type": "Image"
+        },
+        {
+          "name": "BackgroundsPowerBI9507206607015687.jpg",
+          "path": "BackgroundsPowerBI9507206607015687.jpg",
+          "type": "Image"
+        },
+        {
+          "name": "BackgroundsPowerBI40455853728050184.jpg",
+          "path": "BackgroundsPowerBI40455853728050184.jpg",
+          "type": "Image"
+        },
+        {
+          "name": "BackgroundHome834101955378617.png",
+          "path": "BackgroundHome834101955378617.png",
+          "type": "Image"
+        },
+        {
+          "name": "linkedin-white6609791509623663.png",
+          "path": "linkedin-white6609791509623663.png",
+          "type": "Image"
+        },
+        {
+          "name": "github-white6592502205972054.png",
+          "path": "github-white6592502205972054.png",
+          "type": "Image"
         }
       ]
     }

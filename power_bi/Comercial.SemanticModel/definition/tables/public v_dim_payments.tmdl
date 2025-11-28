@@ -1,0 +1,32 @@
+table 'public v_dim_payments'
+	lineageTag: 1e6fa069-a978-46bb-8d95-077ec31d0ca5
+
+	column payment_type_id
+		dataType: string
+		lineageTag: f214c428-e410-4b7c-9463-12abb013b115
+		summarizeBy: none
+		sourceColumn: payment_type_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column payment_method
+		dataType: string
+		lineageTag: 995a5936-f5f4-4a57-bcc1-ab364cd3120c
+		summarizeBy: none
+		sourceColumn: payment_method
+
+		annotation SummarizationSetBy = Automatic
+
+	partition 'public v_dim_payments' = m
+		mode: import
+		source =
+				let
+				    Source = PostgreSQL.Database("172.23.94.200", "bi_comercial_db"),
+				    public_v_dim_customers = Source{[Schema="public",Item="v_dim_payments"]}[Data]
+				in
+				    public_v_dim_customers
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+

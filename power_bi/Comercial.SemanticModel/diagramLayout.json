@@ -4,7 +4,7 @@
     {
       "ordinal": 0,
       "scrollPosition": {
-        "x": 143.38305001469371,
+        "x": 143,
         "y": 0
       },
       "nodes": [
@@ -95,6 +95,58 @@
           "nodeLineageTag": "7962720e-9723-41c8-a61d-085a21ee4ed9",
           "size": {
             "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1149.3830500146937,
+            "y": 0
+          },
+          "nodeIndex": "d_rfm",
+          "nodeLineageTag": "e7fd1fc4-36c1-4f92-a45e-d2adf3f8d57e",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1634.3830500146937,
+            "y": 357.25
+          },
+          "nodeIndex": "Crescimento Esperado %",
+          "nodeLineageTag": "f3da6d8b-95d4-4903-b4dc-db348e3b806a",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1918.3830500146937,
+            "y": 357.25
+          },
+          "nodeIndex": "Janela de Média",
+          "nodeLineageTag": "9f56edb8-4088-4ed0-a164-3d2b31f8bbef",
+          "size": {
+            "height": 224,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 421.38305001469371,
+            "y": 846.25
+          },
+          "nodeIndex": "public v_dim_payments",
+          "nodeLineageTag": "1e6fa069-a978-46bb-8d95-077ec31d0ca5",
+          "size": {
+            "height": 128,
             "width": 234
           },
           "zIndex": 0

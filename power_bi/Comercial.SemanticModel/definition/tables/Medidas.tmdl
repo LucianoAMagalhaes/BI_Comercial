@@ -83,68 +83,6 @@ table Medidas
 		displayFolder: Vendas
 		lineageTag: 7059262d-f217-4fbd-b033-73eae006838e
 
-	measure 'Valor Bruto YTD' = ```
-			
-			/* ==========================================================================
-			Medida: Valor Bruto YTD (Year-to-Date Revenue)
-			==========================================================================
-			Descrição de Negócio:
-			    Cálculo do Faturamento Acumulado desde o início do ano (1º de Janeiro)
-			    até a data do contexto atual.
-			    
-			    Esta métrica é essencial para monitorar o progresso anual da empresa e
-			    suavizar a volatilidade diária/mensal, permitindo uma visão clara da
-			    trajetória de crescimento.
-			
-			Nota Técnica (Time Intelligence):
-			    Utiliza a função nativa TOTALYTD, que modifica o contexto de filtro
-			    para incluir todas as datas do início do ano até a data atual.
-			    
-			    Requisito de Modelagem: Esta função exige a existência de uma Dimensão
-			    de Tempo ('dCalendar') contínua e marcada oficialmente como "Date Table"
-			    nas configurações do modelo para garantir a precisão dos cálculos de tempo.
-			*/
-			
-			TOTALYTD(
-			    [Valor Bruto Total],
-			    dCalendar[Data]
-			)
-			```
-		formatString: "R$"\ #,0.00;-"R$"\ #,0.00;"R$"\ #,0.00
-		displayFolder: Vendas
-		lineageTag: 36c310de-bd2d-42aa-86a5-cf202a07b42a
-
-		annotation PBI_FormatHint = {"currencyCulture":"pt-BR"}
-
-	measure 'Quantidade YTD' = ```
-			
-			/* ==========================================================================
-			Medida: Quantidade YTD (Year-to-Date Volume)
-			==========================================================================
-			Descrição de Negócio:
-			    Volume acumulado de itens vendidos desde o início do ano até a data atual.
-			    
-			    Diferente do faturamento (que mede performance financeira), esta métrica
-			    mede a "Pressão Operacional" e demanda logística acumulada ao longo do ano.
-			    Permite responder: "Estamos movimentando mais caixas este ano do que no 
-			    ano passado?"
-			
-			Nota Técnica (Reutilização de Padrões):
-			    Aplica o mesmo padrão de Time Intelligence da medida financeira, garantindo
-			    consistência arquitetural no modelo.
-			    
-			    Função: TOTALYTD avalia a expressão [Quantidade Total] no contexto de
-			    filtro modificado (DATESYTD), exigindo uma tabela de calendário contínua.
-			*/
-			TOTALYTD(
-			    [Quantidade Total],
-			    dCalendar[Data]
-			)
-			```
-		formatString: 0
-		displayFolder: Vendas
-		lineageTag: 86935fe0-ea36-49b0-a5f1-959438fcd724
-
 	measure 'Valor Bruto PY' = ```
 			
 			/* ==========================================================================

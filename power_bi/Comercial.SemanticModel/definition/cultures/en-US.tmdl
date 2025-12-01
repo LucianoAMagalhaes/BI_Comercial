@@ -5716,58 +5716,6 @@ cultureInfo en-US
 			        }
 			      ]
 			    },
-			    "medida.valor_bruto_YTD": {
-			      "Definition": {
-			        "Binding": {
-			          "ConceptualEntity": "Medidas",
-			          "ConceptualProperty": "Valor Bruto YTD"
-			        }
-			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "valor bruto YTD": {
-			            "State": "Generated"
-			          }
-			        },
-			        {
-			          "valor bruto year to date": {
-			            "Type": "Noun",
-			            "State": "Suggested",
-			            "Source": {
-			              "Agent": "Thesaurus"
-			            },
-			            "Weight": 0.623
-			          }
-			        }
-			      ]
-			    },
-			    "medida.quantidade_YTD": {
-			      "Definition": {
-			        "Binding": {
-			          "ConceptualEntity": "Medidas",
-			          "ConceptualProperty": "Quantidade YTD"
-			        }
-			      },
-			      "State": "Generated",
-			      "Terms": [
-			        {
-			          "quantidade YTD": {
-			            "State": "Generated"
-			          }
-			        },
-			        {
-			          "quantidade year to date": {
-			            "Type": "Noun",
-			            "State": "Suggested",
-			            "Source": {
-			              "Agent": "Thesaurus"
-			            },
-			            "Weight": 0.6
-			          }
-			        }
-			      ]
-			    },
 			    "medida.valor_bruto_PY": {
 			      "Definition": {
 			        "Binding": {

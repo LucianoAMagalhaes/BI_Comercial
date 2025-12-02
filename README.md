@@ -28,7 +28,7 @@
 *Visão Geral Vendas: Interface de previsão e simulação de cenários*
 
 ### 🔗 Links
-- [**Acesse o Dashboard Interativo (NovyPro)**](#) *(Insira seu link aqui)*
+- [**Acesse o Dashboard Interativo**](https://app.powerbi.com/view?r=eyJrIjoiYmRmOTIyYjgtMTc3MC00OTY2LWI3ODAtMDFkNjI1MDQ5YmU0IiwidCI6IjY5N2VmY2I3LTZjMTktNDVkMS04ZDc1LWZkMDE3NjYzNmIyYyJ9)
 
 ---
 
@@ -90,14 +90,14 @@ services:
     environment:
       - POSTGRES_USER=admin_olist
       - POSTGRES_PASSWORD=${DB_PASSWORD} # Variável de ambiente para segurança
-      - POSTGRES_DB=bi_comercial_db
+      - POSTGRES_DB=admin_olist
     ports:
       - "5432:5432"
     volumes:
-      - bi_comercial_data:/var/lib/postgresql/data
+      - olist_data:/var/lib/postgresql/data
 
 volumes:
-  bi_comercial_data:
+  olist_data:
 ```
 
 **1.2 Segurança e Credenciais**  

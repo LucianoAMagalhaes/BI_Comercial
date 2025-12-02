@@ -51,10 +51,10 @@ O projeto não se limita ao visual. Foi construído um pipeline de engenharia de
 
 ```mermaid
 graph LR
-    A[Dados Brutos (CSV)] -->|Python + Pandas| B(PostgreSQL / Docker);
-    B -->|SQL Views| C{Star Schema};
-    C -->|Import| D[Power BI];
-    D -->|DAX| E[Dashboard Interativo];
+    A["Dados Brutos (CSV)"] -->|"Python + Pandas"| B("PostgreSQL / Docker")
+    B -->|"SQL Views"| C{"Star Schema"}
+    C -->|Import| D["Power BI"]
+    D -->|DAX| E["Dashboard Interativo"]
 ```
 
 ---
